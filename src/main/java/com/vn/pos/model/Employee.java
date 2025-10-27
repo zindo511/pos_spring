@@ -25,8 +25,8 @@ public class Employee extends AbstractEntity {
     public String fullName;
 
     public enum EmployeeRole {
-        ADMIN,
-        CASHIER
+        admin,
+        cashier
     }
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
