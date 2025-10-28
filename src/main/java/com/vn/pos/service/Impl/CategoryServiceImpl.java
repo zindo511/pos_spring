@@ -1,5 +1,7 @@
 package com.vn.pos.service.Impl;
 
+import com.vn.pos.exception.Custom.DuplicateResourceException;
+import com.vn.pos.exception.Custom.ResourceNotFoundException;
 import com.vn.pos.mapper.CategoryMapper;
 import com.vn.pos.dto.CategoryDTO.CategoryRequest;
 import com.vn.pos.dto.CategoryDTO.CategoryResponse;
@@ -23,7 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponse createCategory(CategoryRequest requestDTO) {
         if (categoryRepository.existsByName(requestDTO.getName())) {
-            throw new RuntimeException("Category already exists: " + requestDTO.getName());
+            throw new DuplicateResourceException("Resource", "name", requestDTO.getName());
         }
         Category category = categoryMapper.toEntity(requestDTO);
         Category savedCategory = categoryRepository.save(category);
@@ -40,14 +42,14 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponse getCategoryById(Integer id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category Not Found!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
         return categoryMapper.toResponseDTO(category);
     }
 
     @Override
     public CategoryResponse updateCategory(CategoryUpdateRequest requestDTO) {
         Category existing = categoryRepository.findById(requestDTO.getId())
-                .orElseThrow(() -> new RuntimeException("Category Not Found!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", requestDTO.getId()));
 
         // Update only non-null fields
         if (requestDTO.getName() != null) {
@@ -71,12 +73,14 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryResponse findByName(String name) {
-        Category category = categoryRepository.findByNameContainingIgnoreCase(name);
-        if (category == null) {
-            throw new RuntimeException("Category not found with name: " + name);
+    public List<CategoryResponse> findByName(String name) {
+        List<Category> categories = categoryRepository.findByNameContainingIgnoreCase(name);
+        if (categories.isEmpty()) {
+            throw new ResourceNotFoundException("Resource", "name", name);
         }
-        return categoryMapper.toResponseDTO(category);
+        return categories.stream()
+                .map(categoryMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override

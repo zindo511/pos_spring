@@ -38,11 +38,9 @@ public class CategoryController {
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
-    @PutMapping("{id}")
+    @PutMapping
     public ResponseEntity<CategoryResponse> updateCategory(
-            @PathVariable Integer id,
             @Valid @RequestBody CategoryUpdateRequest request) {
-        request.setId(id);
         CategoryResponse responseDTO = categoryService.updateCategory(request);
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
@@ -54,8 +52,8 @@ public class CategoryController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<CategoryResponse> findByName(@RequestParam String name) {
-        CategoryResponse responseDTO = categoryService.findByName(name);
+    public ResponseEntity<List<CategoryResponse>> findByName(@RequestParam String name) {
+        List<CategoryResponse> responseDTO = categoryService.findByName(name);
         return ResponseEntity.ok(responseDTO);
     }
 

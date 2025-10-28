@@ -1,5 +1,8 @@
 package com.vn.pos.service.Impl;
 
+import com.vn.pos.exception.Custom.DuplicateResourceException;
+import com.vn.pos.exception.Custom.InvalidOperationException;
+import com.vn.pos.exception.Custom.ResourceNotFoundException;
 import com.vn.pos.mapper.EmployeeMapper;
 import com.vn.pos.dto.EmployeeDTO.ChangePasswordRequest;
 import com.vn.pos.dto.EmployeeDTO.EmployeeRequest;
@@ -26,7 +29,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse createEmployee(EmployeeRequest request) {
         if (employeeRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Employee already exists: " + request.getUsername());
+            throw new DuplicateResourceException("Resource", "username", request.getUsername());
         }
         Employee employee = employeeMapper.toEntity(request);
         Employee savedEmployee = employeeRepository.save(employee);
@@ -45,7 +48,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional(readOnly = true)
     public EmployeeResponse getEmployeeById(Integer id) {
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
         return employeeMapper.toResponse(employee);
     }
 
@@ -77,7 +80,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void deleteEmployeeById(Integer id) {
         if (!employeeRepository.existsById(id)) {
-            throw new RuntimeException("Employee not found with id: " + id);
+            throw new ResourceNotFoundException("Resource", "id", id);
         }
         employeeRepository.deleteById(id);
     }
@@ -85,7 +88,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse findByUsername(String username) {
         Employee employee = employeeRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Employee not found with username: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "username", username));
         return employeeMapper.toResponse(employee);
     }
 
@@ -98,7 +101,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<EmployeeResponse> findByRole(Employee.EmployeeRole role) {
         List<Employee> employees = employeeRepository.findByRole(role);
         if (employees.isEmpty()) {
-            throw new RuntimeException("Employee not found with role: " + role);
+            throw new ResourceNotFoundException("Resource", "role", role);
         }
         return employees.stream()
                 .map(employeeMapper::toResponse)
@@ -108,10 +111,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void changePassword(Integer id, ChangePasswordRequest request) {
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
 
         if (!employee.getPassword().equals(request.getOldPassword())) {
-            throw new RuntimeException("Old password not match");
+            throw new InvalidOperationException("Old password not match");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new InvalidOperationException("ConfirmPassword don't match NewPassword");
         }
 
         employee.setPassword(request.getNewPassword());

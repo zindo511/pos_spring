@@ -4,6 +4,7 @@ import com.vn.pos.dto.EmployeeDTO.ChangePasswordRequest;
 import com.vn.pos.dto.EmployeeDTO.EmployeeRequest;
 import com.vn.pos.dto.EmployeeDTO.EmployeeResponse;
 import com.vn.pos.dto.EmployeeDTO.EmployeeUpdateRequest;
+import com.vn.pos.exception.Custom.InvalidOperationException;
 import com.vn.pos.model.Employee;
 import com.vn.pos.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/employees")
+@RequestMapping("/api/employees")
 @RequiredArgsConstructor
 public class EmployeeController {
 
@@ -76,10 +77,6 @@ public class EmployeeController {
     public ResponseEntity<Void> changePassword(
             @PathVariable Integer id,
             @Valid @RequestBody ChangePasswordRequest request) {
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new RuntimeException("Passwords don't match");
-        }
-
         employeeService.changePassword(id, request);
         return ResponseEntity.noContent().build();
     }

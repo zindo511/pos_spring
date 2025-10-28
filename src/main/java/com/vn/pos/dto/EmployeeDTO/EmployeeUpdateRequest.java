@@ -23,9 +23,9 @@ public class EmployeeUpdateRequest {
     @NotBlank(message = "fullName must be not blank")
     private String fullName;
 
-    @Pattern(regexp = "ADMIN|CASHIER")
+    @NotNull(message = "role must be not null")
     private Employee.EmployeeRole role;
 
-    @Pattern(regexp = "^[0-9]{10,11}$")
+    @NotNull(message = "phone must be not null")
     private String phone;
 }

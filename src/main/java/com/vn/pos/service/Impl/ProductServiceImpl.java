@@ -10,6 +10,7 @@ import com.vn.pos.repository.CategoryRepository;
 import com.vn.pos.repository.ProductRepository;
 import com.vn.pos.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
@@ -25,16 +27,23 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
 
     @Override
+    @Transactional
     public ProductResponse createProduct(ProductRequest request) {
+        log.debug("Creating product with name: {}", request.getName());
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found with id " + request.getCategoryId()));
+
         Product product = productMapper.toEntity(request, category);
         Product saved = productRepository.save(product);
+
+        log.info("Product created successfully with id: {}", saved.getId());
         return productMapper.toResponse(saved);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductResponse> getAllProducts() {
+        log.debug("Fetching all products");
         List<Product> products = productRepository.findAll();
         return products.stream()
                 .map(productMapper::toResponse)
@@ -42,7 +51,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponse getProductById(Integer id) {
+        log.debug("Fetching product with id: {}", id);
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with: " + id));
         return productMapper.toResponse(product);

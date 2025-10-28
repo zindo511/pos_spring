@@ -13,6 +13,6 @@ public interface CategoryService {
     CategoryResponse updateCategory(CategoryUpdateRequest requestDTO);
     void deleteCategoryById(Integer id);
 
-    CategoryResponse findByName(String name);
+    List<CategoryResponse> findByName(String name);
     boolean existsByName(String name);
 }

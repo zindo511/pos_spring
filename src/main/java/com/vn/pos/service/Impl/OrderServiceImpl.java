@@ -1,5 +1,6 @@
 package com.vn.pos.service.Impl;
 
+import com.vn.pos.exception.Custom.ResourceNotFoundException;
 import com.vn.pos.mapper.OrderMapper;
 import com.vn.pos.dto.OrderDTO.OrderRequest;
 import com.vn.pos.dto.OrderDTO.OrderResponse;
@@ -10,6 +11,7 @@ import com.vn.pos.repository.EmployeeRepository;
 import com.vn.pos.repository.OrderRepository;
 import com.vn.pos.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,9 +45,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponse getOrderById(Integer id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "ID", id));
         return orderMapper.toResponse(order);
     }
 
@@ -53,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse updateOrder(OrderUpdateRequest request) {
         Order order = orderRepository.findById(request.getId())
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + request.getId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", request.getId()));
 
         Employee employee = request.getEmployeeId() != null ?
                employeeRepository.findById(request.getEmployeeId())

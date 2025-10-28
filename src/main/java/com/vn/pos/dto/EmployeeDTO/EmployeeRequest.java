@@ -2,6 +2,7 @@ package com.vn.pos.dto.EmployeeDTO;
 
 import com.vn.pos.model.Employee;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -25,11 +26,7 @@ public class EmployeeRequest {
     @Size(min = 2, max = 100, message = "Full name must be between 2-100 characters")
     private String fullName;
 
-    @NotBlank(message = "role must be not blank")
-    @Pattern(
-            regexp = "^(ADMIN|CASHIER)$",
-            message = "Role must be ADMIN or CASHIER"
-    )
+    @NotNull(message = "role must be not null")
     private Employee.EmployeeRole role;
 
     @NotBlank(message = "phone must be not blank")
