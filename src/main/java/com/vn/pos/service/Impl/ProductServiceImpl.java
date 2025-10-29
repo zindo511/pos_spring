@@ -3,6 +3,8 @@ package com.vn.pos.service.Impl;
 import com.vn.pos.dto.ProductDTO.ProductRequest;
 import com.vn.pos.dto.ProductDTO.ProductResponse;
 import com.vn.pos.dto.ProductDTO.ProductUpdateRequest;
+import com.vn.pos.exception.Custom.InvalidOperationException;
+import com.vn.pos.exception.Custom.ResourceNotFoundException;
 import com.vn.pos.mapper.ProductMapper;
 import com.vn.pos.model.Category;
 import com.vn.pos.model.Product;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,7 +34,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse createProduct(ProductRequest request) {
         log.debug("Creating product with name: {}", request.getName());
         Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found with id " + request.getCategoryId()));
+                .orElseThrow(() -> new InvalidOperationException("Category not found with id " + request.getCategoryId()));
 
         Product product = productMapper.toEntity(request, category);
         Product saved = productRepository.save(product);
@@ -55,7 +58,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse getProductById(Integer id) {
         log.debug("Fetching product with id: {}", id);
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
         return productMapper.toResponse(product);
     }
 
@@ -63,11 +66,11 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponse updateProduct(ProductUpdateRequest request) {
         Product product = productRepository.findById(request.getId())
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + request.getId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", request.getId()));
 
         Category category = request.getCategoryId() != null ?
                 categoryRepository.findById(request.getCategoryId())
-                                .orElseThrow(() -> new RuntimeException("Category not found with id: " + request.getCategoryId()))
+                                .orElseThrow(() -> new ResourceNotFoundException("Resource", "Category", request.getCategoryId()))
                 : product.getCategory();
 
         product.setName(request.getName());
@@ -103,7 +106,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> findByCategoryId(Integer categoryId) {
         List<Product> products =  productRepository.findByCategory_Id(categoryId);
         if (products.isEmpty()) {
-            throw new RuntimeException("Product not found with: " + categoryId);
+            throw new ResourceNotFoundException("Product", "Category", categoryId);
         }
         return products.stream()
                 .map(productMapper::toResponse)
@@ -114,7 +117,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> findByPriceBetween(Double min, Double max) {
         List<Product> products = productRepository.findByPriceBetween(min, max);
         if (products.isEmpty()) {
-            throw new RuntimeException("Product not found with between: " + min + " and " + max);
+            throw new InvalidOperationException("Product not found with between: " + min + " and " + max);
         }
         return products.stream()
                 .map(productMapper::toResponse)
@@ -122,10 +125,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductResponse> findByStockLessThan(Integer quantity) {
         List<Product> products = productRepository.findByStockLessThan(quantity);
         if (products.isEmpty()) {
-            throw new RuntimeException("Product not found stock less than: " + quantity);
+            throw new ResourceNotFoundException("Product", "Stock", quantity);
         }
         return products.stream()
                 .map(productMapper::toResponse)

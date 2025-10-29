@@ -4,7 +4,6 @@ import com.vn.pos.dto.EmployeeDTO.ChangePasswordRequest;
 import com.vn.pos.dto.EmployeeDTO.EmployeeRequest;
 import com.vn.pos.dto.EmployeeDTO.EmployeeResponse;
 import com.vn.pos.dto.EmployeeDTO.EmployeeUpdateRequest;
-import com.vn.pos.exception.Custom.InvalidOperationException;
 import com.vn.pos.model.Employee;
 import com.vn.pos.service.EmployeeService;
 import jakarta.validation.Valid;

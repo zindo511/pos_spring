@@ -35,11 +35,9 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping
     public ResponseEntity<ProductResponse> updateProduct(
-            @PathVariable Integer id,
             @RequestBody ProductUpdateRequest request) {
-        request.setId(id);
         ProductResponse response = productService.updateProduct(request);
         return ResponseEntity.ok(response);
     }
@@ -63,13 +61,13 @@ public class ProductController {
     }
 
     @GetMapping("/statistics/between")
-    public ResponseEntity<List<ProductResponse>> findByPriceBetween(Double min, Double max) {
+    public ResponseEntity<List<ProductResponse>> findByPriceBetween(@RequestParam Double min, @RequestParam Double max) {
         List<ProductResponse> responses = productService.findByPriceBetween(min, max);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/statistics/stock")
-    public ResponseEntity<List<ProductResponse>> findByStockLessThan(Integer quantity) {
+    public ResponseEntity<List<ProductResponse>> findByStockLessThan(@RequestParam Integer quantity) {
         List<ProductResponse> responses = productService.findByStockLessThan(quantity);
         return ResponseEntity.ok(responses);
     }

@@ -11,6 +11,8 @@ import com.vn.pos.dto.EmployeeDTO.EmployeeUpdateRequest;
 import com.vn.pos.model.Employee;
 import com.vn.pos.repository.EmployeeRepository;
 import com.vn.pos.service.EmployeeService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,8 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new DuplicateResourceException("Resource", "username", request.getUsername());
         }
         Employee employee = employeeMapper.toEntity(request);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        employee.setPassword(passwordEncoder.encode(request.getPassword()));
         Employee savedEmployee = employeeRepository.save(employee);
         return employeeMapper.toResponse(savedEmployee);
     }
